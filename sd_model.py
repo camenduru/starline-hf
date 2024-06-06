@@ -2,11 +2,11 @@ from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UniPCM
 from diffusers import StableDiffusionXLControlNetPipeline, ControlNetModel, AutoencoderKL
 import torch
 import pickle as pkl
-import spaces
+
 
 device = "cuda"
 
-def get_cn_pipeline(reference_flg):
+def get_cn_pipeline():
     controlnets = [
         ControlNetModel.from_pretrained("./controlnet/lineart", torch_dtype=torch.float16, use_safetensors=True),
         ControlNetModel.from_pretrained("mattyamonaca/controlnet_line2line_xl", torch_dtype=torch.float16)
@@ -15,6 +15,11 @@ def get_cn_pipeline(reference_flg):
     vae = AutoencoderKL.from_pretrained("madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16)
     pipe = StableDiffusionXLControlNetPipeline.from_pretrained(
         "cagliostrolab/animagine-xl-3.1", controlnet=controlnets, vae=vae, torch_dtype=torch.float16
+    )
+    pipe.load_ip_adapter(
+        "ozzygt/sdxl-ip-adapter",
+        "", 
+        weight_name="ip-adapter_sdxl_vit-h.safetensors"
     )
 
     return pipe
@@ -30,47 +35,7 @@ def invert_image(img):
 
 
 def get_cn_detector(image):
-    #lineart_anime = LineartAnimeDetector.from_pretrained("lllyasviel/Annotators")
-    #canny = CannyDetector()
-    #lineart_anime_img = lineart_anime(image)
-    #canny_img = canny(image)
-    #canny_img = canny_img.resize((lineart_anime(image).width, lineart_anime(image).height))
-    re_image = invert_image(image)
-    
-    
+    re_image = invert_image(image)    
     detectors = [re_image, image]
-    print(detectors)
     return detectors
 
-@spaces.GPU(duration=120)
-def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, reference_img=None):
-    pipe.to("cuda")
-    default_pos = ""
-    default_neg = ""
-    prompt = default_pos + prompt 
-    negative_prompt = default_neg + negative_prompt 
-    
-
-    if reference_flg==False:
-        image = pipe(
-                    prompt=prompt,
-                    negative_prompt = negative_prompt,
-                    image=detectors,
-                    num_inference_steps=50,
-                    controlnet_conditioning_scale=[1.0, 0.2],
-                ).images[0]
-    else:
-        pipe.load_ip_adapter(
-            "ozzygt/sdxl-ip-adapter",
-            "", 
-            weight_name="ip-adapter_sdxl_vit-h.safetensors")
-        image = pipe(
-                    prompt=prompt,
-                    negative_prompt = negative_prompt,
-                    image=detectors,
-                    num_inference_steps=50,
-                    controlnet_conditioning_scale=[1.0, 0.2],
-                    ip_adapter_image=reference_img,
-                ).images[0]
-
-    return image
