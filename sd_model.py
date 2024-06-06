@@ -52,7 +52,6 @@ def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, refe
     
 
     if reference_flg==False:
-        print("####False####")
         image = pipe(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
@@ -61,13 +60,10 @@ def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, refe
                     controlnet_conditioning_scale=[1.0, 0.2],
                 ).images[0]
     else:
-        print("####True####")
-        print(reference_img)
         pipe.load_ip_adapter(
-            "h94/IP-Adapter",
-            subfolder="sdxl_models",
-            weight_name="ip-adapter-plus_sdxl_vit-h.bin"
-        )
+            "ozzygt/sdxl-ip-adapter",
+            "", 
+            weight_name="ip-adapter_sdxl_vit-h.safetensors")
         image = pipe(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
