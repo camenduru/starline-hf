@@ -17,13 +17,6 @@ def get_cn_pipeline(reference_flg):
         "cagliostrolab/animagine-xl-3.1", controlnet=controlnets, vae=vae, torch_dtype=torch.float16
     )
 
-    if reference_flg == True:
-        pipe.load_ip_adapter(
-            "h94/IP-Adapter",
-            subfolder="sdxl_models",
-            weight_name="ip-adapter-plus_sdxl_vit-h.bin"
-        )
-
     return pipe
 
 def invert_image(img):
@@ -59,6 +52,7 @@ def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, refe
     
 
     if reference_flg==False:
+        print("####False####")
         image = pipe(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
@@ -67,6 +61,13 @@ def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, refe
                     controlnet_conditioning_scale=[1.0, 0.2],
                 ).images[0]
     else:
+        print("####True####")
+        print(reference_img)
+        pipe.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="sdxl_models",
+            weight_name="ip-adapter-plus_sdxl_vit-h.bin"
+        )
         image = pipe(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
