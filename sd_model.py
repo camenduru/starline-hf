@@ -1,11 +1,11 @@
 from diffusers import StableDiffusionControlNetPipeline, ControlNetModel, UniPCMultistepScheduler
 from diffusers import StableDiffusionXLControlNetPipeline, ControlNetModel, AutoencoderKL
 import torch
+import pickle as pkl
 import spaces
 
 device = "cuda"
 
-@spaces.GPU
 def get_cn_pipeline():
     controlnets = [
         ControlNetModel.from_pretrained("./controlnet/lineart", torch_dtype=torch.float16, use_safetensors=True),
@@ -17,7 +17,7 @@ def get_cn_pipeline():
         "cagliostrolab/animagine-xl-3.1", controlnet=controlnets, vae=vae, torch_dtype=torch.float16
     )
 
-    pipe.enable_model_cpu_offload()
+    #pipe.enable_model_cpu_offload()
 
     #if pipe.safety_checker is not None:
     #    pipe.safety_checker = lambda images, **kwargs: (images, [False])
