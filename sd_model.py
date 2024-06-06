@@ -6,7 +6,7 @@ import spaces
 
 device = "cuda"
 
-def get_cn_pipeline():
+def get_cn_pipeline(reference_flg):
     controlnets = [
         ControlNetModel.from_pretrained("./controlnet/lineart", torch_dtype=torch.float16, use_safetensors=True),
         ControlNetModel.from_pretrained("mattyamonaca/controlnet_line2line_xl", torch_dtype=torch.float16)
@@ -17,13 +17,12 @@ def get_cn_pipeline():
         "cagliostrolab/animagine-xl-3.1", controlnet=controlnets, vae=vae, torch_dtype=torch.float16
     )
 
-    #pipe.enable_model_cpu_offload()
-
-    #if pipe.safety_checker is not None:
-    #    pipe.safety_checker = lambda images, **kwargs: (images, [False])
-    
-    #pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
-    #pipe.to(device)
+    if reference_flg == True:
+        pipe.load_ip_adapter(
+            "h94/IP-Adapter",
+            subfolder="sdxl_models",
+            weight_name="ip-adapter-plus_sdxl_vit-h.bin"
+        )
 
     return pipe
 
@@ -51,18 +50,30 @@ def get_cn_detector(image):
     return detectors
 
 @spaces.GPU
-def generate(pipe, detectors, prompt, negative_prompt):
+def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, reference_img=None):
     pipe.to("cuda")
     default_pos = ""
     default_neg = ""
     prompt = default_pos + prompt 
     negative_prompt = default_neg + negative_prompt 
-    print(type(pipe))
-    image = pipe(
-                prompt=prompt,
-                negative_prompt = negative_prompt,
-                image=detectors,
-                num_inference_steps=50,
-                controlnet_conditioning_scale=[1.0, 0.2],
-            ).images[0]
+    
+
+    if reference_flg==False:
+        image = pipe(
+                    prompt=prompt,
+                    negative_prompt = negative_prompt,
+                    image=detectors,
+                    num_inference_steps=50,
+                    controlnet_conditioning_scale=[1.0, 0.2],
+                ).images[0]
+    else:
+        image = pipe(
+                    prompt=prompt,
+                    negative_prompt = negative_prompt,
+                    image=detectors,
+                    num_inference_steps=50,
+                    controlnet_conditioning_scale=[1.0, 0.2],
+                    ip_adapter_image=reference_img,
+                ).images[0]
+
     return image

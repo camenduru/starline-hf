@@ -11,9 +11,6 @@ import os
 import numpy as np
 from PIL import Image
 import zipfile
-import torch
-
-zero = torch.Tensor([0]).cuda()
 
 path = os.getcwd()
 output_dir = f"{path}/output"
@@ -45,7 +42,7 @@ class webui:
     def __init__(self):
         self.demo = gr.Blocks()
 
-    def undercoat(self, input_image, pos_prompt, neg_prompt, alpha_th, thickness):
+    def undercoat(self, input_image, pos_prompt, neg_prompt, alpha_th, thickness, reference_flg, reference_img):
         org_line_image = input_image
         image = pil2cv(input_image)
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGBA)
@@ -54,18 +51,19 @@ class webui:
         image[index] = [255, 255, 255, 255]
         input_image = cv2pil(image)
 
-        pipe = get_cn_pipeline()
+        pipe = get_cn_pipeline(reference_flg)
         detectors = get_cn_detector(input_image.resize((1024, 1024), Image.ANTIALIAS))
         
 
-        gen_image = generate(pipe, detectors, pos_prompt, neg_prompt)
+        gen_image = generate(pipe, detectors, pos_prompt, neg_prompt, reference_flg, reference_img)
         color_img, unfinished = process(gen_image.resize((image.shape[1], image.shape[0]), Image.ANTIALIAS) , org_line_image, alpha_th, thickness)
         #color_img = color_img.resize((image.shape[1], image.shape[0]) , Image.ANTIALIAS)
 
 
         output_img = Image.alpha_composite(color_img, org_line_image)
         name = randomname(10)
-        os.makedirs(f"{output_dir}")
+        if not os.path.exists(f"{output_dir}"):
+            os.makedirs(f"{output_dir}")
         os.makedirs(f"{output_dir}/{name}")
         output_img.save(f"{output_dir}/{name}/output_image.png")
         org_line_image.save(f"{output_dir}/{name}/line_image.png")
@@ -84,13 +82,15 @@ class webui:
         with self.demo:
             with gr.Row():
                 with gr.Column():
-                    input_image = gr.Image(type="pil", image_mode="RGBA")
-
+                    input_image = gr.Image(type="pil", image_mode="RGBA", label="lineart")
                     pos_prompt = gr.Textbox(value="1girl, blue hair, pink shirts, bestquality, 4K", max_lines=1000, label="positive prompt")                    
                     neg_prompt = gr.Textbox(value=" (worst quality, low quality:1.2), (lowres:1.2), (bad anatomy:1.2), (greyscale, monochrome:1.4)", max_lines=1000, label="negative prompt")
 
                     alpha_th = gr.Slider(maximum = 255, value=100, label = "alpha threshold")
                     thickness = gr.Number(value=5, label="Thickness of correction area (Odd numbers need to be entered)")
+                
+                    reference_image = gr.Image(type="pil", image_mode="RGB", label="reference_image")
+                    reference_flg = gr.Checkbox(value=True, label="reference_flg")
                     #gr.Slider(maximum = 21, value=3, step=2, label = "Thickness of correction area")
 
                     submit = gr.Button(value="Start")
@@ -101,7 +101,7 @@ class webui:
                         output_file = gr.File()
             submit.click(
                 self.undercoat, 
-                inputs=[input_image, pos_prompt, neg_prompt, alpha_th, thickness], 
+                inputs=[input_image, pos_prompt, neg_prompt, alpha_th, thickness, reference_image, reference_flg], 
                 outputs=[output_0, output_file]
             )
 
