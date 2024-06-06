@@ -5,13 +5,13 @@ from starline import process
 from utils import load_cn_model, load_cn_config, randomname
 from convertor import pil2cv, cv2pil
 
-from sd_model import get_cn_pipeline, generate, get_cn_detector
+from sd_model import get_cn_pipeline, get_cn_detector
 import cv2
 import os
 import numpy as np
 from PIL import Image
 import zipfile
-import spaces
+#import spaces
 
 path = os.getcwd()
 output_dir = f"{path}/output"
@@ -22,7 +22,8 @@ load_cn_model(cn_lineart_dir)
 load_cn_config(cn_lineart_dir)
 pipe = get_cn_pipeline()
 
-@spaces.GPU(duration=120)
+
+#@spaces.GPU(duration=120)
 def generate(detectors, prompt, negative_prompt, reference_flg=False, reference_img=None):
     default_pos = ""
     default_neg = ""
@@ -107,7 +108,7 @@ class webui:
 
         detectors = get_cn_detector(input_image.resize((1024, 1024), Image.ANTIALIAS))
 
-        gen_image = generate(pipe, detectors, pos_prompt, neg_prompt, reference_flg, reference_img)
+        gen_image = generate(detectors, pos_prompt, neg_prompt, reference_flg, reference_img)
         color_img, unfinished = process(gen_image.resize((image.shape[1], image.shape[0]), Image.ANTIALIAS) , org_line_image, alpha_th, thickness)
         #color_img = color_img.resize((image.shape[1], image.shape[0]) , Image.ANTIALIAS)
 
