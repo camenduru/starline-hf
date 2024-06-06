@@ -5,6 +5,7 @@ import spaces
 
 device = "cuda"
 
+@spaces.GPU
 def get_cn_pipeline():
     controlnets = [
         ControlNetModel.from_pretrained("./controlnet/lineart", torch_dtype=torch.float16, use_safetensors=True),
