@@ -35,14 +35,14 @@ def generate(detectors, prompt, negative_prompt, reference_flg=False, reference_
     negative_prompt = default_neg + negative_prompt 
     
 
-    if reference_flg==False and reference_img is not None:
+    if reference_flg==True and reference_img is not None:
         image = pipe_ip(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
                     image=detectors,
                     num_inference_steps=50,
                     controlnet_conditioning_scale=[1.0, 0.2],
-                    ip_adapter_image=None,
+                    ip_adapter_image=reference_img,
                 ).images[0]
     else:
 
@@ -51,8 +51,7 @@ def generate(detectors, prompt, negative_prompt, reference_flg=False, reference_
                     negative_prompt = negative_prompt,
                     image=detectors,
                     num_inference_steps=50,
-                    controlnet_conditioning_scale=[1.0, 0.2],
-                    ip_adapter_image=reference_img,
+                    controlnet_conditioning_scale=[1.0, 0.2]
                 ).images[0]
     return image
 
