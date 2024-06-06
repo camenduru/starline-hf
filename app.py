@@ -101,7 +101,7 @@ class webui:
                         output_file = gr.File()
             submit.click(
                 self.undercoat, 
-                inputs=[input_image, pos_prompt, neg_prompt, alpha_th, thickness, reference_image, reference_flg], 
+                inputs=[input_image, pos_prompt, neg_prompt, alpha_th, thickness, reference_flg, reference_image], 
                 outputs=[output_0, output_file]
             )
 
