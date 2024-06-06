@@ -52,6 +52,7 @@ def get_cn_detector(image):
 
 @spaces.GPU
 def generate(pipe, detectors, prompt, negative_prompt):
+    pipe.to("cuda")
     default_pos = ""
     default_neg = ""
     prompt = default_pos + prompt 
