@@ -60,13 +60,12 @@ class webui:
 
         gen_image = generate(pipe, detectors, pos_prompt, neg_prompt)
         color_img, unfinished = process(gen_image.resize((image.shape[1], image.shape[0]), Image.ANTIALIAS) , org_line_image, alpha_th, thickness)
-        color_img.save(f"{output_dir}/color_img.png")
-
         #color_img = color_img.resize((image.shape[1], image.shape[0]) , Image.ANTIALIAS)
 
 
         output_img = Image.alpha_composite(color_img, org_line_image)
         name = randomname(10)
+        os.makedirs(f"{output_dir}")
         os.makedirs(f"{output_dir}/{name}")
         output_img.save(f"{output_dir}/{name}/output_image.png")
         org_line_image.save(f"{output_dir}/{name}/line_image.png")
