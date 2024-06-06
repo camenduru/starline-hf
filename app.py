@@ -11,7 +11,7 @@ import os
 import numpy as np
 from PIL import Image
 import zipfile
-#import spaces
+import spaces
 
 path = os.getcwd()
 output_dir = f"{path}/output"
@@ -23,7 +23,7 @@ load_cn_config(cn_lineart_dir)
 pipe = get_cn_pipeline()
 
 
-#@spaces.GPU(duration=120)
+@spaces.GPU(duration=120)
 def generate(detectors, prompt, negative_prompt, reference_flg=False, reference_img=None):
     default_pos = ""
     default_neg = ""
