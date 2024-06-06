@@ -42,7 +42,7 @@ def get_cn_detector(image):
     print(detectors)
     return detectors
 
-@spaces.GPU
+@spaces.GPU(duration=120)
 def generate(pipe, detectors, prompt, negative_prompt, reference_flg=False, reference_img=None):
     pipe.to("cuda")
     default_pos = ""
