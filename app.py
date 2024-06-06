@@ -37,12 +37,36 @@ def zip_png_files(folder_path):
                     # zipファイルに追加
                     zipf.write(file_path, arcname=os.path.relpath(file_path, folder_path))
 
+def resize_image(img, max_size=1024):
+    # 画像を開く
+    width, height = img.size
+    print(f"元の画像サイズ: 幅 {width} x 高さ {height}")
+    
+    # 縦または横がmax_sizeを超えているかチェック
+    if width > max_size or height > max_size:
+        # 縦横比を保ちながらリサイズ
+        if width > height:
+            new_width = max_size
+            new_height = int(max_size * height / width)
+        else:
+            new_height = max_size
+            new_width = int(max_size * width / height)
+        
+        # リサイズ実行
+        resized_img = img.resize((new_width, new_height), Image.ANTIALIAS)
+        print(f"リサイズ後の画像サイズ: 幅 {new_width} x 高さ {new_height}")
+        return resized_img
+    else:
+        return img
+
+
 
 class webui:
     def __init__(self):
         self.demo = gr.Blocks()
 
     def undercoat(self, input_image, pos_prompt, neg_prompt, alpha_th, thickness, reference_flg, reference_img):
+        input_image = resize_image(input_image)
         org_line_image = input_image
         image = pil2cv(input_image)
         image = cv2.cvtColor(image, cv2.COLOR_BGRA2RGBA)
