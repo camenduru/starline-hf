@@ -16,6 +16,19 @@ def get_cn_pipeline():
     pipe = StableDiffusionXLControlNetPipeline.from_pretrained(
         "cagliostrolab/animagine-xl-3.1", controlnet=controlnets, vae=vae, torch_dtype=torch.float16
     )
+
+    return pipe
+
+def get_ip_pipeline():
+    controlnets = [
+        ControlNetModel.from_pretrained("./controlnet/lineart", torch_dtype=torch.float16, use_safetensors=True),
+        ControlNetModel.from_pretrained("mattyamonaca/controlnet_line2line_xl", torch_dtype=torch.float16)
+    ]
+
+    vae = AutoencoderKL.from_pretrained("madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16)
+    pipe = StableDiffusionXLControlNetPipeline.from_pretrained(
+        "cagliostrolab/animagine-xl-3.1", controlnet=controlnets, vae=vae, torch_dtype=torch.float16
+    )
     pipe.load_ip_adapter(
         "ozzygt/sdxl-ip-adapter",
         "", 

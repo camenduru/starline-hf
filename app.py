@@ -5,7 +5,7 @@ from starline import process
 from utils import load_cn_model, load_cn_config, randomname
 from convertor import pil2cv, cv2pil
 
-from sd_model import get_cn_pipeline, get_cn_detector
+from sd_model import get_cn_pipeline, get_cn_detector, get_ip_pipeline
 import cv2
 import os
 import numpy as np
@@ -20,8 +20,10 @@ cn_lineart_dir = f"{path}/controlnet/lineart"
 
 load_cn_model(cn_lineart_dir)
 load_cn_config(cn_lineart_dir)
-pipe = get_cn_pipeline()
-pipe.to("cuda")
+pipe_cn = get_cn_pipeline()
+pipe_ip = get_ip_pipeline()
+pipe_cn.to("cuda")
+pipe_ip.to("cuda")
 
 
 
@@ -33,8 +35,8 @@ def generate(detectors, prompt, negative_prompt, reference_flg=False, reference_
     negative_prompt = default_neg + negative_prompt 
     
 
-    if reference_flg==False:
-        image = pipe(
+    if reference_flg==False and reference_img is not None:
+        image = pipe_ip(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
                     image=detectors,
@@ -44,7 +46,7 @@ def generate(detectors, prompt, negative_prompt, reference_flg=False, reference_
                 ).images[0]
     else:
 
-        image = pipe(
+        image = pipe_cn(
                     prompt=prompt,
                     negative_prompt = negative_prompt,
                     image=detectors,
